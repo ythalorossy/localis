@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>br.com.ythalorossy.web</groupId>
+	<artifactId>localis-web</artifactId>
+	<version>0.0.2</version>
+	<packaging>war</packaging>
+	<name>Localis Web</name>
+	<dependencies>
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>6.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>br.com.ythalorossy.ejb</groupId>
+			<artifactId>localis-core</artifactId>
+			<version>0.0.2</version>
+			<type>ejb</type>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>1.17.1</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>
