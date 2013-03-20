@@ -4,7 +4,7 @@
 
 	<groupId>br.com.ythalorossy.web</groupId>
 	<artifactId>localis-web</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<packaging>war</packaging>
 	<name>Localis Web</name>
 	<dependencies>
@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>br.com.ythalorossy.ejb</groupId>
 			<artifactId>localis-core</artifactId>
-			<version>0.0.2</version>
+			<version>0.0.3</version>
 			<type>ejb</type>
 		</dependency>
 		<dependency>

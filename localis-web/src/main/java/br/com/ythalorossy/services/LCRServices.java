@@ -29,10 +29,10 @@ import javax.ws.rs.core.UriInfo;
 import br.com.ythalorossy.constants.LCRStatus;
 import br.com.ythalorossy.dto.LCRDTO;
 import br.com.ythalorossy.dto.LCRStatusDTO;
+import br.com.ythalorossy.model.LCR;
 import br.com.ythalorossy.services.responses.LCRListResponse;
 import br.com.ythalorossy.services.responses.LCRResponse;
 import br.com.ythalorossy.sessions.LCRManager;
-import br.com.ythalorossy.to.LCRTO;
 import br.com.ythalorossy.utils.LCRUtils;
 
 import com.sun.jersey.core.util.Base64;
@@ -77,21 +77,7 @@ public class LCRServices {
 	@Path("/lcrs")
     public Response getAllByGet() {
     	
-		LCRListResponse lcrListResponse = new LCRListResponse();
-		
-		Set<LCRTO> lcrs = lcrManager.getAll();
-
-		if (lcrs.isEmpty()) {
-
-			throw new WebApplicationException(Status.NOT_FOUND);
-		}
-
-		for (LCRTO lcrto : lcrs) {
-			
-			lcrListResponse.add(new LCRResponse(lcrto).getLcr());
-		}
-		
-    	return Response.status(Status.OK).entity(lcrListResponse).build();
+		return getAll();
     }
 
 	 /**
@@ -103,20 +89,7 @@ public class LCRServices {
 	@Path("/lcrs")
     public Response getAllByPost() {
     	
-		LCRListResponse lcrListResponse = new LCRListResponse();
-		
-		Set<LCRTO> lcrs = lcrManager.getAll();
-
-		if (lcrs.isEmpty()) {
-			throw new WebApplicationException(Status.NOT_FOUND);
-		}
-
-		for (LCRTO lcrto : lcrs) {
-			
-			lcrListResponse.add(new LCRResponse(lcrto).getLcr());
-		}
-		
-    	return Response.status(Status.OK).entity(lcrListResponse).build();
+		return getAll();
     }	
 	
 	/**
@@ -130,14 +103,8 @@ public class LCRServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response byGetURL(@QueryParam("url") String url, @QueryParam("cache") String cache) {
     	
-    	LCRTO lcr = lcrManager.getLCR(url, new Boolean(cache));
-    	
-    	if (lcr == null) {
-    		throw new WebApplicationException(Status.NOT_FOUND);
-    	} 
-    	
-    	return Response.status(Status.OK).entity(new LCRResponse(lcr)).build();
-    }	
+    	return getByUrl(url, cache);
+    }
 
 	/**
 	 * Solicita uma LCR através da URL.
@@ -150,14 +117,9 @@ public class LCRServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response byPostURL(@QueryParam("url") String url, @QueryParam("cache") String cache) {
     	
-    	LCRTO lcr = lcrManager.getLCR(url, new Boolean(cache));
-    	
-    	if (lcr == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
-    	} 
-    	
-    	return Response.status(Status.OK).entity(new LCRResponse(lcr)).build();
-    }		
+		return getByUrl(url, cache);
+    }			
+	
 	
 	@PUT
 	@Path("/{url}")
@@ -174,7 +136,7 @@ public class LCRServices {
 		
 		Response response = Response.status(Status.ACCEPTED).build();
 		
-		LCRTO lcr = lcrManager.getLCR(url, new Boolean(true));
+		LCR lcr = lcrManager.getLCR(url, new Boolean(true));
     	
     	if (lcr == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);
@@ -192,7 +154,7 @@ public class LCRServices {
 	@Path("/check/{url}")
 	public Response checkGet(@QueryParam("url") String url) {
 		
-		LCRTO lcr = lcrManager.getLCR(url);
+		LCR lcr = lcrManager.getLCR(url);
 		
 		if (lcr == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);			
@@ -206,7 +168,7 @@ public class LCRServices {
 	@Path("/check/{url}")
 	public Response checkPost(@QueryParam("url") String url) {
 		
-		LCRTO lcr = lcrManager.getLCR(url);
+		LCR lcr = lcrManager.getLCR(url);
 		
 		if (lcr == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);			
@@ -236,11 +198,11 @@ public class LCRServices {
 			
 			for (String url : urls) {
 			
-				LCRTO lcrto = lcrManager.getLCR(url, new Boolean(cache));
+				LCR lcr = lcrManager.getLCR(url, new Boolean(cache));
 				
-				if (lcrto != null) {
+				if (lcr != null) {
 					
-					lcrdto = new LCRResponse(lcrto).getLcr();
+					lcrdto = new LCRResponse(LCRUtils.convert(lcr)).getLcr();
 					
 					break;
 				}
@@ -283,5 +245,34 @@ public class LCRServices {
     	return "OK";
     }
     
+	private Response getAll() {
+		
+		LCRListResponse lcrListResponse = new LCRListResponse();
+		
+		Set<LCR> lcrs = lcrManager.getAll();
 
+		if (lcrs.isEmpty()) {
+
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
+
+		for (LCR lcr : lcrs) {
+			
+			lcrListResponse.add(new LCRResponse(LCRUtils.convert(lcr)).getLcr());
+		}
+		
+    	return Response.status(Status.OK).entity(lcrListResponse).build();
+	}
+  
+	private Response getByUrl(String url, String cache) {
+		
+		LCR lcr = lcrManager.getLCR(url, new Boolean(cache));
+    	
+    	if (lcr == null) {
+    		throw new WebApplicationException(Status.NOT_FOUND);
+    	} 
+    	
+    	return Response.status(Status.OK).entity(new LCRResponse(LCRUtils.convert(lcr))).build();
+	}	
+	
 }
