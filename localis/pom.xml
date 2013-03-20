@@ -7,7 +7,7 @@
 	<name>Localis</name>
 	<packaging>pom</packaging>
 	<modules>
-		<module>../localis-ejb</module>
+		<module>../localis-core</module>
 		<module>../localis-web</module>
 	</modules>
 </project>
