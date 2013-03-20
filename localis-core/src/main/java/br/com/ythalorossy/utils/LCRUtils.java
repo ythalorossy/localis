@@ -42,26 +42,26 @@ public class LCRUtils {
 		return crl;
 	}
 	
-	public static LCRTO createLCR(String url, InputStream inputStream) {
+	public static LCR createLCR(String url, InputStream inputStream) {
 		
 		X509CRL crl = createLCR(inputStream);
 
-		LCRTO lcrto = null;
+		LCR lcr = null;
 		
 		try {
 			
-			lcrto = parse(crl);
+			lcr = parse1(crl);
 		
 		} catch (CRLException e) {
 
 			e.printStackTrace();
 		}
 
-		if (lcrto != null) {
-			lcrto.setUrl(url);
+		if (lcr != null) {
+			lcr.setUrl(url);
 		}
 		
-		return lcrto;
+		return lcr;
 	}
 
 	public static LCRTO parse(X509CRL crl) throws CRLException {
@@ -78,6 +78,23 @@ public class LCRUtils {
 		}
 		
 		return lcrto;
+	}
+	
+	//TODO: refatorar ....
+	public static LCR parse1(X509CRL crl) throws CRLException {
+		
+		LCR lcr = null;
+		
+		if (crl != null) {
+			
+			lcr = new LCR();
+			lcr.setLcr(crl.getEncoded());
+			lcr.setNextUpdate(getNextUpdate(crl));
+			lcr.setThisUpdate(getThisUpdate(crl));
+			lcr.setStatus(LCRStatus.STATUS_ATUALIZADA);
+		}
+		
+		return lcr;
 	}
 	
 	public static LCR convert(LCRTO lcrto) {

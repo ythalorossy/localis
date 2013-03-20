@@ -4,16 +4,16 @@ import java.util.Set;
 
 import javax.ejb.Remote;
 
-import br.com.ythalorossy.to.LCRTO;
+import br.com.ythalorossy.model.LCR;
 
 @Remote
 public interface LCRManager {
 	
-	public LCRTO getLCR(String url);
+	public LCR getLCR(String url);
 	
-	public LCRTO getLCR(String url, boolean cache);
+	public LCR getLCR(String url, boolean cache);
 	
-	public Set<LCRTO> getAll();
+	public Set<LCR> getAll();
 	
 	public void add(String url);
 	

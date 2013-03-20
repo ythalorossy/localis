@@ -34,7 +34,9 @@ public class LCRProducer implements LCRRequestProducer {
 
 			ObjectMessage message = session.createObjectMessage(new String(url));
 		
-			producer.send(message);		
+			producer.send(message);
+			
+			System.out.println("Na Fila " + url);
 			
 		} catch (JMSException e) {
 

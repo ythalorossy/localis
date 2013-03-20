@@ -6,8 +6,6 @@ import java.util.Calendar;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -19,7 +17,6 @@ import br.com.ythalorossy.model.LCR;
 import br.com.ythalorossy.sessions.LCRCacheManager;
 import br.com.ythalorossy.sessions.LCRDBManager;
 import br.com.ythalorossy.streams.LCRStreamDownload;
-import br.com.ythalorossy.to.LCRTO;
 import br.com.ythalorossy.utils.CalendarUtil;
 import br.com.ythalorossy.utils.FileUtil;
 import br.com.ythalorossy.utils.LCRUtils;
@@ -49,30 +46,40 @@ public class LCRConsumer implements MessageListener {
 			
 			if (lcr == null) {
 				
-				criarLCR(url);
-			}
+				lcr = new LCR();
+				lcr.setUrl(url);
+				lcr.setThisUpdate(Calendar.getInstance());
+				
+				lcrdbManager.persist(lcr);
+			} 
+				
+			lcr.setStatus(LCRStatus.STATUS_BAIXANDO);
 			
-			LCRTO lcrTO = baixaLCR(url);
-			
-			if (lcrTO == null) {
+			try {
 				
-				lcrdbManager.changeStatus(url, LCRStatus.STATUS_EXPIRADA);
+				InputStream inputStream = new LCRStreamDownload().execute(lcr.getUrl());
 				
-			} else {
-				
-				LCR lcr1 = lcrdbManager.findByURL(url);
-				lcr1.setLcr(lcrTO.getBytes());
-				
-				X509CRL crl = LCRUtils.createLCR(lcrTO.getBytes());
+				if (inputStream != null) {
+					
+					lcr.setLcr(FileUtil.getBytes(inputStream));
+					lcr.setStatus(LCRStatus.STATUS_ATUALIZADA);
+				}
 
-				lcr1.setNextUpdate(CalendarUtil.convert(crl.getNextUpdate()));
-				lcr1.setStatus(LCRStatus.STATUS_ATUALIZADA);
+				if (lcr.getStatus().equals(LCRStatus.STATUS_ATUALIZADA)) {
+
+					X509CRL crl = LCRUtils.createLCR(lcr.getLcr());
+
+					lcr.setNextUpdate(CalendarUtil.convert(crl.getNextUpdate()));
+				}
 				
-				lcrdbManager.persist(lcr1);
+				lcrdbManager.persist(lcr);
 				
-				lcrTO = LCRUtils.convert(lcr1);
-				
-				cacheManager.put(lcrTO);
+				cacheManager.put(lcr);
+			
+			} catch (Exception e) {
+
+				lcrdbManager.changeStatus(url, LCRStatus.STATUS_EXPIRADA);
+
 			}
 			
 		} catch (JMSException e) {
@@ -80,36 +87,4 @@ public class LCRConsumer implements MessageListener {
 			e.printStackTrace();
 		}
 	}
-
-	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-	private void criarLCR(String url) {
-		LCR lcr = new LCR();
-		lcr.setStatus(LCRStatus.STATUS_EXPIRADA);
-		lcr.setUrl(url);
-		lcr.setThisUpdate(Calendar.getInstance());
-		
-		lcrdbManager.persist(lcr);
-	}
-
-	private LCRTO baixaLCR(String url) {
-
-		LCRTO lcrto = null;
-		
-		try {
-			
-			InputStream inputStream = new LCRStreamDownload().execute(url);
-			
-			if (inputStream != null) {
-			
-				lcrto = new LCRTO(url, FileUtil.getBytes(inputStream));
-			}
-			
-		}  catch (Exception e) {
-			
-			lcrto = null;
-		}
-
-		return lcrto;
-	}
-
 }

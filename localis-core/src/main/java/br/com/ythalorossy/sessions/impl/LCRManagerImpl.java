@@ -6,14 +6,12 @@ import java.util.Set;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import br.com.ythalorossy.constants.LCRStatus;
 import br.com.ythalorossy.model.LCR;
 import br.com.ythalorossy.sessions.LCRCacheManager;
 import br.com.ythalorossy.sessions.LCRDBManager;
 import br.com.ythalorossy.sessions.LCRManager;
 import br.com.ythalorossy.sessions.jms.producer.LCRRequestProducer;
 import br.com.ythalorossy.streams.LCRStreamRecover;
-import br.com.ythalorossy.to.LCRTO;
 import br.com.ythalorossy.utils.LCRUtils;
 
 // Session Facade ou application service
@@ -36,20 +34,21 @@ public class LCRManagerImpl implements LCRManager {
 	public LCRManagerImpl() {
 	}
 
-	public LCRTO getLCR(String url, boolean cache) {
+	public LCR getLCR(String url, boolean cache) {
 		
-		LCRTO lcrTO = null;
+		LCR lcr = null;
 		
 		if (cache) {
 			
-			lcrTO = findCache(url);
+			lcr = findCache(url);
 		
 		} else {
 		
 			try {
+				
 				InputStream inputStream = lcrStream.execute(url);
 				
-				lcrTO = LCRUtils.createLCR(url,inputStream);
+				lcr = LCRUtils.createLCR(url,inputStream);
 			
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -57,7 +56,7 @@ public class LCRManagerImpl implements LCRManager {
 			
 		}
 		
-		return lcrTO;
+		return lcr;
 	}
 
 	/**
@@ -65,21 +64,23 @@ public class LCRManagerImpl implements LCRManager {
 	 * @param url URL utilizada como chave de acesso no CACHE de LCR.
 	 * @return
 	 */
-	private LCRTO findCache(String url) {
+	private LCR findCache(String url) {
 		
-		LCRTO lcrTO = lcrCacheManager.get(url);
+		LCR lcr = lcrCacheManager.get(url);
 		
-		if (lcrTO == null) {
+		if (lcr == null) {
 			
-			lcrTO = findCacheDataBase(url);
+			lcr = findCacheDataBase(url);
+
+			if (lcr == null) {
 			
-			if (lcrTO.getLcrStatus().equals(LCRStatus.STATUS_NAO_LOCALIZADA)) {
-				
 				lcrProducerJMS.execute(url);
+
 			}
+		
 		}
 		
-		return lcrTO;
+		return lcr;
 	}
 
 	/**
@@ -87,34 +88,20 @@ public class LCRManagerImpl implements LCRManager {
 	 * @param url
 	 * @return
 	 */
-	private LCRTO findCacheDataBase(String url) {
-		
-		LCRTO lcrTO = null;
+	private LCR findCacheDataBase(String url) {
 		
 		LCR lcr = lcrdbManager.findByURL(url);
 		
-		if (lcr == null) {
-			
-			lcrTO = new LCRTO(url);
-			lcrTO.setLcrStatus(LCRStatus.STATUS_NAO_LOCALIZADA);
-		
-		} else {
-			
-			lcrTO = new LCRTO(url, lcr.getLcr());
-			lcrTO.setLcrStatus(lcr.getStatus());
-			lcrTO.setNextUpdate(lcr.getNextUpdate());
-		}
-		
-		return lcrTO;
+		return lcr;
 	}
 
-	public LCRTO getLCR(String url) {
+	public LCR getLCR(String url) {
 		return getLCR(url, true);
 	}
 
-	public Set<LCRTO> getAll() {
+	public Set<LCR> getAll() {
 		
-		Set<LCRTO> result = lcrCacheManager.getAll();
+		Set<LCR> result = lcrCacheManager.getAll();
 		
 		return result;
 	}

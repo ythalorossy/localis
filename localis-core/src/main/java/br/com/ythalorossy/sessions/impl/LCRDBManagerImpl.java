@@ -52,7 +52,8 @@ public class LCRDBManagerImpl implements LCRDBManager {
 			result = query.getSingleResult();
 
 		} catch (NoResultException e) {
-
+			
+			result = null;
 		}
 
 		return result;

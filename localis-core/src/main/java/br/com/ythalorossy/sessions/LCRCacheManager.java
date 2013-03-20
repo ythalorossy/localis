@@ -4,16 +4,16 @@ import java.util.Set;
 
 import javax.ejb.Remote;
 
-import br.com.ythalorossy.to.LCRTO;
+import br.com.ythalorossy.model.LCR;
 
 @Remote
 public interface LCRCacheManager {
 
-	public abstract LCRTO get(String url);
+	public abstract LCR get(String url);
 
-	public abstract void put(LCRTO lcr);
+	public abstract void put(LCR lcr);
 	
-	public abstract Set<LCRTO> getAll();
+	public abstract Set<LCR> getAll();
 	
 	public abstract void remove(String url);
 	

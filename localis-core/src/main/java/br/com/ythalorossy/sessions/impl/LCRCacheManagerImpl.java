@@ -16,15 +16,13 @@ import br.com.ythalorossy.constants.LCRStatus;
 import br.com.ythalorossy.model.LCR;
 import br.com.ythalorossy.sessions.LCRCacheManager;
 import br.com.ythalorossy.sessions.LCRDBManager;
-import br.com.ythalorossy.to.LCRTO;
-import br.com.ythalorossy.utils.LCRUtils;
 
 @ApplicationScoped
 @Named(value="ejb/LCRCacheManager")
 public class LCRCacheManagerImpl implements LCRCacheManager {
 
 	@Singleton
-	private static Map<String, LCRTO> cache = new HashMap<String, LCRTO>();
+	private static Map<String, LCR> cache = new HashMap<String, LCR>();
 
 	@Inject
 	private LCRDBManager lcrdbManager;
@@ -43,15 +41,13 @@ public class LCRCacheManagerImpl implements LCRCacheManager {
 
 				if (lcr.getStatus().equals(LCRStatus.STATUS_ATUALIZADA)) {
 
-					LCRTO lcrto = LCRUtils.convert(lcr);
-					
-					cache.put(lcr.getUrl(), lcrto);
+					cache.put(lcr.getUrl(), lcr);
 				}
 			}
 		}
 	}
 	
-	public void put(LCRTO lcrto) {
+	public void put(LCR lcrto) {
 
 		synchronized (cache) {
 
@@ -59,22 +55,22 @@ public class LCRCacheManagerImpl implements LCRCacheManager {
 		}
 	}
 
-	public LCRTO get(String url) {
+	public LCR get(String url) {
 		
-		LCRTO lcr = cache.get(url);
+		LCR lcr = cache.get(url);
 		
 		return lcr;
 	}
 
-	public Set<LCRTO> getAll() {
+	public Set<LCR> getAll() {
 		
-		Set<LCRTO> result = new HashSet<LCRTO>();
+		Set<LCR> result = new HashSet<LCR>();
 		
 		if (cache.size() > 0) {
 			
-			for ( LCRTO lcrto : cache.values() ) {
+			for ( LCR lcr : cache.values() ) {
 				
-				result.add(lcrto);
+				result.add(lcr);
 			}
 		}
 		
