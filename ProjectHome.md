@@ -1,0 +1,1 @@
+Arquitetura de gerenciamento de LCR em cache local
