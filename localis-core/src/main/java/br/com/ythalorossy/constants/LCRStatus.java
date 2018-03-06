@@ -29,7 +29,7 @@ public enum LCRStatus {
 		
 		return null;
 	}
-	
+
 	public Integer getCodigo() {
 		return codigo;
 	}

@@ -7,15 +7,15 @@ import br.com.ythalorossy.model.LCR;
 
 public interface LCRDBManager {
 
-	public Collection<LCR> findAllExpired();
+	Collection<LCR> findAllExpired();
 	
-	public void persist(LCR lcr);
+	void persist(LCR lcr);
 	
-	public LCR findByURL(String url);
+	LCR findByURL(String url);
 	
-	public void changeStatus(String url, LCRStatus status);
+	void changeStatus(String url, LCRStatus status);
 
-	public Collection<LCR> findAll();
+	Collection<LCR> findAll();
 	
-	public boolean delete(String url);
+	boolean delete(String url);
 }

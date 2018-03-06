@@ -9,14 +9,13 @@ import br.com.ythalorossy.model.LCR;
 @Remote
 public interface LCRManager {
 	
-	public LCR getLCR(String url);
+	LCR getLCR(String url);
 	
-	public LCR getLCR(String url, boolean cache);
+	LCR getLCR(String url, boolean cache);
 	
-	public Set<LCR> getAll();
+	Set<LCR> getAll();
 	
-	public void add(String url);
+	void add(String url);
 	
-	public boolean remove(String url);
-	
+	boolean remove(String url);
 }

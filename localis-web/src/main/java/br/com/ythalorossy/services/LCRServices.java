@@ -6,6 +6,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,18 +28,16 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import br.com.ythalorossy.constants.LCRStatus;
-import br.com.ythalorossy.dto.LCRDTO;
 import br.com.ythalorossy.dto.LCRStatusDTO;
 import br.com.ythalorossy.model.LCR;
 import br.com.ythalorossy.services.responses.LCRListResponse;
 import br.com.ythalorossy.services.responses.LCRResponse;
+import br.com.ythalorossy.services.responses.StatusCodeResponse;
 import br.com.ythalorossy.sessions.LCRManager;
 import br.com.ythalorossy.utils.LCRUtils;
 
-import com.sun.jersey.core.util.Base64;
 
 @Path("lcr")
-@Stateless
 public class LCRServices {
 
 	@EJB
@@ -49,80 +48,47 @@ public class LCRServices {
 	
     public LCRServices() {
     }
-    
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/codigos/status")
-    public LCRStatusDTO[] getCodigosStatus() {
-    	
-    	final LCRStatusDTO[] retorno = new LCRStatusDTO[LCRStatus.values().length];
-    	
-    	int i = 0;
-    	
-    	for (LCRStatus lcrStatus : LCRStatus.values()) {
-			
-    		retorno[i++] = new LCRStatusDTO(lcrStatus.getCodigo().toString(), lcrStatus.getDescricao());
+
+	@GET
+	@Path("/all")
+	@Produces(MediaType.APPLICATION_JSON)
+    public Response getAll() {
+
+		LCRListResponse lcrListResponse = new LCRListResponse();
+
+		Set<LCR> lcrs = lcrManager.getAll();
+
+		if (lcrs.isEmpty()) {
+
+			throw new WebApplicationException(Status.NOT_FOUND);
 		}
-    	
-    	return retorno;
-    }
-    
-    
-    /**
-     * Recupera listagem com todas as LCR residentes no CACHE.
-     * @return
-     */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/lcrs")
-    public Response getAllByGet() {
-    	
-		return getAll();
+
+		for (LCR lcr : lcrs) {
+			lcrListResponse
+					.getLcrs()
+					.add(new LCRResponse(LCRUtils.convert(lcr)).getLcr());
+		}
+
+		return Response.status(Status.OK).entity(lcrListResponse).build();
     }
 
-	 /**
-     * Recupera listagem com todas as LCR residentes no CACHE.
-     * @return
-     */
-	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/lcrs")
-    public Response getAllByPost() {
-    	
-		return getAll();
-    }	
-	
-	/**
-	 * Solicita uma LCR através da URL.
-	 * @param url URL que representa a LCR no CACHE.
-	 * @param cache TRUE: Para recuperar a LCR do CACHE local. FALSE para solicitar o download via internet.
-	 * @return
-	 */
 	@GET
-	@Path(value = "/{url}/{cache}")
+	@Path(value = "/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response byGetURL(@QueryParam("url") String url, @QueryParam("cache") String cache) {
-    	
-    	return getByUrl(url, cache);
+    public Response getByURL(@QueryParam("url") String url, @QueryParam("cache") String cache) {
+
+		LCR lcr = lcrManager.getLCR(url, new Boolean(cache));
+
+		if (lcr == null) {
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
+
+		return Response.status(Status.OK).entity(new LCRResponse(LCRUtils.convert(lcr))).build();
     }
 
-	/**
-	 * Solicita uma LCR através da URL.
-	 * @param url URL que representa a LCR no CACHE.
-	 * @param cache TRUE: Para recuperar a LCR do CACHE local. FALSE para solicitar o download via internet.
-	 * @return
-	 */
-	@POST
-	@Path(value = "/lcr/{url}/{cache}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response byPostURL(@QueryParam("url") String url, @QueryParam("cache") String cache) {
-    	
-		return getByUrl(url, cache);
-    }			
-	
-	
 	@PUT
-	@Path("/{url}")
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response putURL(@QueryParam("url") String url) {
 		
 		lcrManager.add(url);
@@ -131,7 +97,7 @@ public class LCRServices {
 	}
 	
 	@DELETE
-	@Path("/{url}")
+	@Path("/")
 	public Response deleteURL(@QueryParam("url") String url){
 		
 		Response response = Response.status(Status.ACCEPTED).build();
@@ -151,71 +117,72 @@ public class LCRServices {
 	}
 	
 	@GET
-	@Path("/check/{url}")
+	@Path("/check")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response checkGet(@QueryParam("url") String url) {
 		
 		LCR lcr = lcrManager.getLCR(url);
-		
+
 		if (lcr == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);			
 		
 		} 
 		
-		return Response.status(Status.OK).build();
+		return Response.ok(lcr).build();
 	}
 
-	@POST
-	@Path("/check/{url}")
-	public Response checkPost(@QueryParam("url") String url) {
-		
-		LCR lcr = lcrManager.getLCR(url);
-		
-		if (lcr == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);			
-		
-		} 
-		
-		return Response.status(Status.OK).build();
-	}	
-	
-    @POST
-    @Path("/certificate/{base64}/{cache}")
-    public LCRDTO byCertificateBase64(@QueryParam("certificateBase64") String certificateBase64, @QueryParam("cache") String cache) {
-    	
-    	LCRDTO lcrdto = null;
-    	
-		try {
-	
-			byte[] bytes = Base64.decode(certificateBase64);
-			
-			CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-			
-			InputStream in = new ByteArrayInputStream(bytes);
-			
-			X509Certificate cert = (X509Certificate) certFactory.generateCertificate(in);
+	@GET
+	@Path("/codes")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCodes() {
 
-			List<String> urls = LCRUtils.extractURL(cert);
-			
-			for (String url : urls) {
-			
-				LCR lcr = lcrManager.getLCR(url, new Boolean(cache));
-				
-				if (lcr != null) {
-					
-					lcrdto = new LCRResponse(LCRUtils.convert(lcr)).getLcr();
-					
-					break;
-				}
-			}
-			
-		} catch (CertificateException e) {
-			
-			e.printStackTrace();
+		StatusCodeResponse result = new StatusCodeResponse();
+
+		for (LCRStatus lcrStatus : LCRStatus.values()) {
+			result.getStatus()
+					.add( new LCRStatusDTO( lcrStatus.getCodigo().toString(), lcrStatus.getDescricao()) );
 		}
-    	
-    	return lcrdto;
-    }
 
+		return Response.status(Status.OK).entity(result).build();
+	}
+
+//    @POST
+//    @Path("/certificate/{base64}/{cache}")
+//    public LCRDTO byCertificateBase64(@QueryParam("certificateBase64") String certificateBase64, @QueryParam("cache") String cache) {
+//
+//    	LCRDTO lcrdto = null;
+//
+//		try {
+//
+//			byte[] bytes = Base64.decode(certificateBase64);
+//
+//			CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+//
+//			InputStream in = new ByteArrayInputStream(bytes);
+//
+//			X509Certificate cert = (X509Certificate) certFactory.generateCertificate(in);
+//
+//			List<String> urls = LCRUtils.extractURL(cert);
+//
+//			for (String url : urls) {
+//
+//				LCR lcr = lcrManager.getLCR(url, new Boolean(cache));
+//
+//				if (lcr != null) {
+//
+//					lcrdto = new LCRResponse(LCRUtils.convert(lcr)).getLcr();
+//
+//					break;
+//				}
+//			}
+//
+//		} catch (CertificateException e) {
+//
+//			e.printStackTrace();
+//		}
+//
+//    	return lcrdto;
+//    }
 
 
     /*
@@ -244,35 +211,4 @@ public class LCRServices {
 		}
     	return "OK";
     }
-    
-	private Response getAll() {
-		
-		LCRListResponse lcrListResponse = new LCRListResponse();
-		
-		Set<LCR> lcrs = lcrManager.getAll();
-
-		if (lcrs.isEmpty()) {
-
-			throw new WebApplicationException(Status.NOT_FOUND);
-		}
-
-		for (LCR lcr : lcrs) {
-			
-			lcrListResponse.add(new LCRResponse(LCRUtils.convert(lcr)).getLcr());
-		}
-		
-    	return Response.status(Status.OK).entity(lcrListResponse).build();
-	}
-  
-	private Response getByUrl(String url, String cache) {
-		
-		LCR lcr = lcrManager.getLCR(url, new Boolean(cache));
-    	
-    	if (lcr == null) {
-    		throw new WebApplicationException(Status.NOT_FOUND);
-    	} 
-    	
-    	return Response.status(Status.OK).entity(new LCRResponse(LCRUtils.convert(lcr))).build();
-	}	
-	
 }

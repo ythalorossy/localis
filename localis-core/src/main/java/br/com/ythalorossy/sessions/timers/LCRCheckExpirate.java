@@ -23,7 +23,7 @@ public class LCRCheckExpirate {
 	public LCRCheckExpirate() {
 	}
 
-	@Schedule(second = "*/30", minute = "*", hour = "*", dayOfWeek = "*", dayOfMonth = "*", month = "*", year = "*", info = "LCRCheckExpirate")
+	@Schedule(second = "*/30", minute = "*", hour = "*", info = "LCRCheckExpirate")
 	private void scheduledTimeout(final Timer t) {
 
 		try {
@@ -46,6 +46,5 @@ public class LCRCheckExpirate {
 			System.err.println(e.getMessage());
 
 		}
-
 	}
 }

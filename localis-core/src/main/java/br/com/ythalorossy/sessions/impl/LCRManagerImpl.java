@@ -14,8 +14,6 @@ import br.com.ythalorossy.sessions.jms.producer.LCRRequestProducer;
 import br.com.ythalorossy.streams.LCRStreamRecover;
 import br.com.ythalorossy.utils.LCRUtils;
 
-// Session Facade ou application service
-
 @Stateless
 public class LCRManagerImpl implements LCRManager {
 
@@ -60,7 +58,7 @@ public class LCRManagerImpl implements LCRManager {
 	}
 
 	/**
-	 * Consulta o CACHE em memória e em base de dados.
+	 * Consulta o CACHE em memï¿½ria e em base de dados.
 	 * @param url URL utilizada como chave de acesso no CACHE de LCR.
 	 * @return
 	 */

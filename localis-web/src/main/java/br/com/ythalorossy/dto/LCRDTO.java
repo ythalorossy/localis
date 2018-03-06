@@ -1,13 +1,18 @@
 package br.com.ythalorossy.dto;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
 @XmlRootElement(name = "lcr")
-public class LCRDTO {
+public class LCRDTO implements Serializable {
 
 	private LCRStatusDTO lcrStatusDTO;
 
 	private String base64;
+
+	public LCRDTO () {
+
+	}
 
 	public LCRStatusDTO getLcrStatusDTO() {
 		return lcrStatusDTO;

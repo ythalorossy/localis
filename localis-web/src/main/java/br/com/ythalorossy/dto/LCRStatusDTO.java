@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name="lcrStatus")
+@XmlRootElement
 public class LCRStatusDTO implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -12,9 +12,8 @@ public class LCRStatusDTO implements Serializable {
 	private String codigo;
 	private String descricao;
 
-	public LCRStatusDTO() {
-	}
-	
+	public LCRStatusDTO() {}
+
 	public LCRStatusDTO(String codigo, String descricao) {
 		this.codigo = codigo;
 		this.descricao = descricao;
@@ -36,4 +35,8 @@ public class LCRStatusDTO implements Serializable {
 		this.descricao = descricao;
 	}
 
+	@Override
+	public String toString() {
+		return this.codigo + " : " + this.descricao;
+	}
 }

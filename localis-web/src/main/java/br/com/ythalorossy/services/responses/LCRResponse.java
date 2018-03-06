@@ -6,12 +6,13 @@ import java.security.cert.X509CRL;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.sun.jersey.core.util.Base64;
 
 import br.com.ythalorossy.constants.LCRStatus;
 import br.com.ythalorossy.dto.LCRDTO;
 import br.com.ythalorossy.dto.LCRStatusDTO;
 import br.com.ythalorossy.to.LCRTO;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
+
 
 @XmlRootElement(name="lcrresponse")
 public class LCRResponse {
@@ -45,9 +46,9 @@ public class LCRResponse {
     		
     			X509CRL crl = (X509CRL) cf.generateCRL(new ByteArrayInputStream(lcr.getBytes()));
     			
-    			byte[] crlBase64 = Base64.encode(crl.getEncoded());
+    			String crlBase64 = Base64.encode(crl.getEncoded());
     			
-    			lcrdto.setBase64(new String(crlBase64, "UTF-8"));
+    			lcrdto.setBase64(crlBase64);
     			
     			LCRStatusDTO lcrStatusDTO = new LCRStatusDTO(lcr.getLcrStatus().getCodigo().toString(), lcr.getLcrStatus().getDescricao());
     			
@@ -67,8 +68,6 @@ public class LCRResponse {
     		lcrdto.setLcrStatusDTO(lcrStatusDTO);
     	}
 	    
-    	this.lcr = lcrdto;
-    	
+    	setLcr( lcrdto );
 	}
-	
 }

@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
+import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
@@ -18,6 +19,7 @@ import br.com.ythalorossy.model.LCR;
 import br.com.ythalorossy.sessions.LCRDBManager;
 
 @Named(value="ejb/LCRDBManager")
+@Stateless
 public class LCRDBManagerImpl implements LCRDBManager {
 
 	@PersistenceContext(unitName = "lcr-pu")
@@ -98,7 +100,7 @@ public class LCRDBManagerImpl implements LCRDBManager {
 
 	public boolean delete(String url) {
 
-		TypedQuery<LCR> query = entityManager.createNamedQuery("LCR.findAll", LCR.class);
+		TypedQuery<LCR> query = entityManager.createNamedQuery("LCR.deleteByURL", LCR.class);
 
 		query.setParameter("url", url);
 		

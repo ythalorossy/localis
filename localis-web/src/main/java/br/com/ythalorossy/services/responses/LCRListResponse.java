@@ -1,16 +1,21 @@
 package br.com.ythalorossy.services.responses;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import br.com.ythalorossy.dto.LCRDTO;
 
-@XmlRootElement(name = "lcrlistresponse")
-public class LCRListResponse {
+@XmlRootElement
+public class LCRListResponse implements Serializable {
 
-	private Set<LCRDTO> lcrs;
+	@XmlElement
+	private Set<LCRDTO> lcrs = new HashSet<LCRDTO>();
+
+	public LCRListResponse () {}
 
 	public Set<LCRDTO> getLcrs() {
 		return lcrs;
@@ -19,15 +24,4 @@ public class LCRListResponse {
 	public void setLcrs(Set<LCRDTO> lcrs) {
 		this.lcrs = lcrs;
 	}
-	
-	public LCRListResponse add(LCRDTO lcrdto) {
-		if (lcrs == null) {
-			lcrs = new HashSet<LCRDTO>();
-		} 
-		
-		lcrs.add(lcrdto);
-		
-		return this;
-	}
-
 }
